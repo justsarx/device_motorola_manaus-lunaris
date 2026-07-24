@@ -23,6 +23,9 @@ bluetooth.profile.pan.panu.enabled=true
 bluetooth.profile.pbap.server.enabled=true
 bluetooth.profile.sap.server.enabled=true
 ro.vendor.bt.platform=6879
+persist.bluetooth.hardware_error_logging=false
+bluetooth.device.default_name=motorola edge 40 neo
+
 
 # Camera
 camera.disable_zsl_mode=1
