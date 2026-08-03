@@ -12,11 +12,16 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 $(call inherit-product, device/motorola/manaus/device.mk)
 
 # Inherit some common lineageOS stuff.
-$(call inherit-product, vendor/custom/config/common_full_phone.mk)
+$(call inherit-product, vendor/lineage/config/common_full_phone.mk)
 
+LUNARIS_BUILD_TYPE := OFFICIAL
+WITH_GMS := true
+TARGET_OPTIMIZED_DEXOPT := true
+TARGET_CUSTOM_UDFPS := true
 TARGET_BOOT_ANIMATION_RES := 1080
+USE_REALITY_ENGINE := true
 
-PRODUCT_NAME := custom_manaus
+PRODUCT_NAME := lineage_manaus
 PRODUCT_DEVICE := manaus
 PRODUCT_MANUFACTURER := Motorola
 PRODUCT_BRAND := motorola

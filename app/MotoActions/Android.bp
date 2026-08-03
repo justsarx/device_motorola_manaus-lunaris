@@ -34,3 +34,17 @@ android_app {
         "hidden-api-whitelist-org.lineageos.settings.device.xml",
     ],
 }
+
+prebuilt_etc {
+    name: "org.lineageos.settings.device.xml",
+    sub_dir: "permissions",
+    src: "org.lineageos.settings.device.xml",
+    system_ext_specific: true,
+}
+
+prebuilt_etc {
+    name: "hidden-api-whitelist-org.lineageos.settings.device.xml",
+    sub_dir: "sysconfig",
+    src: "hidden-api-whitelist-org.lineageos.settings.device.xml",
+    system_ext_specific: true,
+}

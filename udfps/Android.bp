@@ -12,6 +12,6 @@ cc_library_shared {
     ],
     header_libs: [
         "generated_kernel_headers",
-        "libudfpshandler_headers",
+        "motorolafingerprint_headers",
     ],
 }

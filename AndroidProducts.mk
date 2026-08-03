@@ -5,4 +5,4 @@
 #
 
 PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/custom_manaus.mk
+    $(LOCAL_DIR)/lineage_manaus.mk
