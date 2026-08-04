@@ -151,6 +151,10 @@
             <name>IMtkPower</name>
             <instance>default</instance>
         </interface>
+        <interface>
+            <name>IMtkPerf</name>
+            <instance>default</instance>
+        </interface>
     </hal>
     <hal format="hidl">
         <name>vendor.mediatek.hardware.nwk_opt</name>
