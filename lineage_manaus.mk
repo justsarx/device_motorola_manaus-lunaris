@@ -14,7 +14,7 @@ $(call inherit-product, device/motorola/manaus/device.mk)
 # Inherit some common lineageOS stuff.
 $(call inherit-product, vendor/lineage/config/common_full_phone.mk)
 
-LUNARIS_BUILD_TYPE := OFFICIAL
+LUNARIS_BUILD_TYPE := UNOFFICIAL
 WITH_GMS := true
 TARGET_OPTIMIZED_DEXOPT := true
 TARGET_CUSTOM_UDFPS := true
@@ -25,7 +25,7 @@ PRODUCT_NAME := lineage_manaus
 PRODUCT_DEVICE := manaus
 PRODUCT_MANUFACTURER := Motorola
 PRODUCT_BRAND := motorola
-PRODUCT_MODEL := motorola edge 40 neo
+PRODUCT_MODEL := edge 40 neo
 
 PRODUCT_GMS_CLIENTID_BASE := android-motorola
 
