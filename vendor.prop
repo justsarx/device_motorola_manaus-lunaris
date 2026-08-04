@@ -311,8 +311,8 @@ ro.vendor.wifi.sap.interface=ap0
 ro.vendor.wlan.chrdev=wmt_chrdev_wifi_connac2
 ro.vendor.wlan.gen=gen4m_6879
 
-# ZRAM writeback
-ro.zram_backing_device_min_free_mb=1536
-ro.zram.mark_idle_delay_mins=60
-ro.zram.first_wb_delay_mins=180
-ro.zram.periodic_wb_delay_hours=24
+# ZRAM writeback (4GB storage backing partition)
+ro.zram_backing_device_min_free_mb=3072
+ro.zram.mark_idle_delay_mins=30
+ro.zram.first_wb_delay_mins=60
+ro.zram.periodic_wb_delay_hours=12
