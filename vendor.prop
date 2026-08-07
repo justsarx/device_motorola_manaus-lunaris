@@ -101,9 +101,6 @@ ro.vendor.pq.mtk_backlight_smooth_support=0
 ro.vendor.pq.mtk_ultra_dimming_support=0
 ro.vendor.pq.mtk_blulight_def_support=0
 
-# Dolby
-ro.vendor.dolby.dax.version=DAX3_3.11.0.10_r2
-
 # DRM
 drm.service.enabled=true
 ro.vendor.mtk_widevine_drm_l1_support=1

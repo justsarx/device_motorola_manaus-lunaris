@@ -60,11 +60,7 @@ blob_fixups: blob_fixups_user_type = {
         .replace_needed('libalsautils.so','libalsautils-v31.so'),
     'vendor/bin/mnld': blob_fixup()
         .replace_needed('libsensorndkbridge.so', 'android.hardware.sensors@1.0-convert-shared.so'),
-    (
-        'vendor/lib64/hw/mt6879/android.hardware.camera.provider@2.6-impl-mediatek.so',
-        'vendor/lib64/mt6879/libmtkcam_stdutils.so',
-        'vendor/bin/hw/vendor.dolby.media.c2@1.0-service',
-    ): blob_fixup()
+    ('vendor/lib64/hw/mt6879/android.hardware.camera.provider@2.6-impl-mediatek.so', 'vendor/lib64/mt6879/libmtkcam_stdutils.so'): blob_fixup()
         .replace_needed('libutils.so', 'libutils-v32.so'),
     'vendor/lib64/librt_extamp_intf.so': blob_fixup()
         .replace_needed('libtinyxml2.so', 'libtinyxml2-v31.so'),
@@ -99,20 +95,6 @@ blob_fixups: blob_fixups_user_type = {
         .regex_replace('DEFAULT_OFFHOST_ROUTE=0x01', 'DEFAULT_OFFHOST_ROUTE=0xC0')
         .regex_replace('OFFHOST_ROUTE_ESE={01}', 'OFFHOST_ROUTE_ESE={C0}')
         .add_line_if_missing('DEFAULT_NFCF_ROUTE=0xC0'),
-    (
-        'vendor/lib64/libcodec2_soft_ac4dec.so',
-        'vendor/lib64/libcodec2_soft_ddpdec.so',
-        'vendor/lib64/libdlbdsservice.so',
-        'vendor/lib64/libdlbpreg.so',
-        'vendor/lib64/soundfx/libdlbvol.so',
-    ): blob_fixup()
-        .replace_needed('libstagefright_foundation.so', 'libstagefright_foundation-v33.so'),
-    'vendor/lib64/soundfx/libswdap.so': blob_fixup()
-        .binary_regex_replace(b'\x1f\x00\x00\x71\xe0\x03\x00\x91\xf3\x17\x9f\x1a\x41\x62\x04\x94',
-                              b'\x1f\x00\x00\x71\xe0\x03\x00\x91\x13\x00\x80\x52\x41\x62\x04\x94')
-        .binary_regex_replace(rb'\x09\x00\x00\x12\x89\x02\x09\x0b\x3f\x01\x08\x6b\xca\x01\x00\x54',
-                              b'\x09\x00\x00\x12\x89\x02\x09\x0b\x3f\x01\x08\x6b\x0e\x00\x00\x14')
-        .replace_needed('libstagefright_foundation.so', 'libstagefright_foundation-v33.so'),
 }  # fmt: skip
 
 module = ExtractUtilsModule(

@@ -143,10 +143,6 @@ on property:ro.bootmode=mot-factory
     write /sys/class/leds/charging/brightness 255
 
 on early-boot
-    # Dolby
-    mkdir /data/vendor/dolby 0770 media media
-    mkdir /data/vendor/multimedia 0775 system system
-
     # Permission for Health Storage HAL
     chown system system /sys/devices/platform/112b0000.ufshci/manual_gc
     chown system system /sys/devices/platform/112b0000.ufshci/ufshid/trigger

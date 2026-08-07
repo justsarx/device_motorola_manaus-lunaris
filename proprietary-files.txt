@@ -262,6 +262,7 @@ vendor/lib64/libmtkcam_pipelinepolicy-aov.so;DISABLE_CHECKELF
 vendor/lib64/libmtkcam_thirdparty.vidhance.so
 vendor/lib64/libmtkisp_metadata.so
 vendor/lib64/libmtkisp_metadata_v2.so
+vendor/lib64/liboem_specific.so
 vendor/lib64/libportrait_repair_ppl3_ocl.so
 vendor/lib64/libscltm.so
 vendor/lib64/libstfactory-vendor.so
@@ -749,37 +750,6 @@ vendor/lib64/liburee_meta_drmkeyinstall.so
 vendor/lib64/libwvhidl.so
 vendor/lib64/mediadrm/libmockdrmcryptoplugin.so
 vendor/lib64/mediadrm/libwvdrmengine.so
-
-# Dolby
-product/etc/default-permissions/default-permissions-com.motorola.dolby.dolbyui.xml
-product/priv-app/DMService/DMService.apk
-system/etc/permissions/com.motorola.dolby.dolbyui.dax3.features.xml
-system/etc/sysconfig/hiddenapi-whitelist-com.motorola.dolby.dolbyui.xml
-system_ext/etc/permissions/com.dolby.daxservice.xml
-system_ext/priv-app/daxService/daxService.apk
-vendor/bin/hw/vendor.dolby.hardware.dms@2.1-service
-vendor/bin/hw/vendor.dolby.media.c2@1.0-service
-vendor/etc/init/vendor.dolby.media.c2@1.0-service.rc
-vendor/etc/init/vendor.dolby.hardware.dms@2.1-service.rc
-vendor/etc/dolby/dax-default.xml
-vendor/etc/vintf/manifest/vendor.dolby.hardware.dms.xml
-vendor/etc/media_codecs_dolby_audio.xml
-vendor/lib64/libcodec2_soft_ac4dec.so
-vendor/lib64/libcodec2_soft_ddpdec.so
-vendor/lib64/libcodec2_store_dolby.so
-vendor/lib64/libdapparamstorage.so
-vendor/lib64/libdeccfg.so
-vendor/lib64/libdlbdsservice.so
-vendor/lib64/libdlbpreg.so
-vendor/lib64/libdmshal.so
-vendor/lib64/liboem_specific.so
-vendor/lib64/soundfx/libdlbvol.so;DISABLE_DEPS
-vendor/lib64/soundfx/libldnhncr.so;DISABLE_DEPS
-vendor/lib64/soundfx/libswdap.so;DISABLE_DEPS
-vendor/lib64/soundfx/libswgamedap.so;DISABLE_DEPS
-vendor/lib64/vendor.dolby.dms-V1-ndk_platform.so
-vendor/lib64/vendor.dolby.hardware.dms@2.0.so
-vendor/lib64/vendor.dolby.hardware.dms@2.1.so
 
 # Euicc
 product/app/EuiccPartnerApp/EuiccPartnerApp.apk;PRESIGNED

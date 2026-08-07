@@ -1,2 +1,1 @@
-vendor.dolby.dms.IDms/default                                      u:object_r:hal_dms_service:s0
 motorola.hardware.camera.imgtuner.aidl.IImageTuning/default          u:object_r:hal_camera_service:s0
