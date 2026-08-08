@@ -25,6 +25,13 @@ bluetooth.profile.sap.server.enabled=true
 ro.vendor.bt.platform=6879
 persist.bluetooth.hardware_error_logging=false
 bluetooth.device.default_name=motorola edge 40 neo
+persist.vendor.bt.lhdc_v2_v3=true
+persist.vendor.bt.lhdc_v4=true
+persist.vendor.bt.lhdc_v5=true
+persist.sys.ff_lhdc=true
+persist.sys.bt.lhdc=true
+persist.sys.bt.lhdc_v3=true
+persist.sys.bt.lhdc_v5=true
 
 
 # Camera

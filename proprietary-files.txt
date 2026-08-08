@@ -189,6 +189,10 @@ vendor/lib64/libbluetooth_mtk_pure.so
 vendor/lib64/libbluetooth_relayer.so
 vendor/lib64/libbluetoothem_mtk.so
 vendor/lib64/libbt-vendor.so
+system/lib64/liblhdc.so;DISABLE_DEPS;APEX_AVAILABLE=//apex_available:platform,com.android.bt
+system/lib64/liblhdcBT_enc.so;DISABLE_DEPS;APEX_AVAILABLE=//apex_available:platform,com.android.bt
+system/lib64/liblhdcv5.so;DISABLE_DEPS;APEX_AVAILABLE=//apex_available:platform,com.android.bt
+system/lib64/liblhdcv5BT_enc.so;DISABLE_DEPS;APEX_AVAILABLE=//apex_available:platform,com.android.bt
 
 # Bluetooth (Firmware)
 vendor/etc/init/init.bt_drv.rc

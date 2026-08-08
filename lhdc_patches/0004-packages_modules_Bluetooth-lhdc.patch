@@ -1,0 +1,1071 @@
+From c7b7d1f7623445634f357ee487371dd451639510 Mon Sep 17 00:00:00 2001
+From: Alcatraz323 <alcatraz32323@gmail.com>
+Date: Thu, 8 Jan 2026 16:45:37 +0800
+Subject: [PATCH 1/8] bluetooth: lhdc: Apply Android 15 QPR1 - Android 16 QPR1
+ changes
+
+---
+ system/stack/a2dp/a2dp_codec_config.cc        | 22 ++++-
+ system/stack/a2dp/a2dp_vendor.cc              | 10 +++
+ system/stack/a2dp/a2dp_vendor_lhdcv3.cc       | 36 ++++----
+ system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc   | 38 ++++-----
+ .../stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc  |  2 +-
+ .../stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc  |  4 +-
+ system/stack/a2dp/a2dp_vendor_lhdcv5.cc       | 82 +++++++++----------
+ .../stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc  |  2 +-
+ .../stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc  |  2 +-
+ system/stack/include/a2dp_vendor_lhdcv3.h     |  2 +-
+ system/stack/include/a2dp_vendor_lhdcv3_dec.h |  6 +-
+ system/stack/include/a2dp_vendor_lhdcv5.h     |  6 +-
+ 12 files changed, 118 insertions(+), 94 deletions(-)
+
+diff --git a/system/stack/a2dp/a2dp_codec_config.cc b/system/stack/a2dp/a2dp_codec_config.cc
+index 2ddaadf315..79e9f2d300 100644
+--- a/system/stack/a2dp/a2dp_codec_config.cc
++++ b/system/stack/a2dp/a2dp_codec_config.cc
+@@ -1302,6 +1302,10 @@ bool A2DP_CodecEquals(const uint8_t* p_codec_info_a, const uint8_t* p_codec_info
+       return A2DP_VendorCodecEqualsLdac(p_codec_info_a, p_codec_info_b);
+     case bluetooth::a2dp::CodecId::OPUS:
+       return A2DP_VendorCodecEqualsOpus(p_codec_info_a, p_codec_info_b);
++    case bluetooth::a2dp::CodecId::LHDCV3:
++      return A2DP_VendorCodecEqualsLhdcV3(p_codec_info_a, p_codec_info_b);
++    case bluetooth::a2dp::CodecId::LHDCV5:
++      return A2DP_VendorCodecEqualsLhdcV5(p_codec_info_a, p_codec_info_b);
+ #endif
+     default:
+       break;
+@@ -1332,6 +1336,10 @@ int A2DP_GetTrackSampleRate(const uint8_t* p_codec_info) {
+       return A2DP_VendorGetTrackSampleRateLdac(p_codec_info);
+     case bluetooth::a2dp::CodecId::OPUS:
+       return A2DP_VendorGetTrackSampleRateOpus(p_codec_info);
++    case bluetooth::a2dp::CodecId::LHDCV3:
++      return A2DP_VendorGetTrackSampleRateLhdcV3(p_codec_info);
++    case bluetooth::a2dp::CodecId::LHDCV5:
++      return A2DP_VendorGetTrackSampleRateLhdcV5(p_codec_info);
+ #endif
+     default:
+       break;
+@@ -1362,6 +1370,10 @@ int A2DP_GetTrackBitsPerSample(const uint8_t* p_codec_info) {
+       return A2DP_VendorGetTrackBitsPerSampleLdac(p_codec_info);
+     case bluetooth::a2dp::CodecId::OPUS:
+       return A2DP_VendorGetTrackBitsPerSampleOpus(p_codec_info);
++    case bluetooth::a2dp::CodecId::LHDCV3:
++      return A2DP_VendorGetTrackBitsPerSampleLhdcV3(p_codec_info);
++    case bluetooth::a2dp::CodecId::LHDCV5:
++      return A2DP_VendorGetTrackBitsPerSampleLhdcV5(p_codec_info);
+ #endif
+     default:
+       break;
+@@ -1392,6 +1404,10 @@ int A2DP_GetTrackChannelCount(const uint8_t* p_codec_info) {
+       return A2DP_VendorGetTrackChannelCountLdac(p_codec_info);
+     case bluetooth::a2dp::CodecId::OPUS:
+       return A2DP_VendorGetTrackChannelCountOpus(p_codec_info);
++    case bluetooth::a2dp::CodecId::LHDCV3:
++      return A2DP_VendorGetTrackChannelCountLhdcV3(p_codec_info);
++    case bluetooth::a2dp::CodecId::LHDCV5:
++      return A2DP_VendorGetTrackChannelCountLhdcV5(p_codec_info);
+ #endif
+     default:
+       break;
+@@ -1443,6 +1459,10 @@ bool A2DP_GetPacketTimestamp(const uint8_t* p_codec_info, const uint8_t* p_data,
+       return A2DP_VendorGetPacketTimestampLdac(p_codec_info, p_data, p_timestamp);
+     case bluetooth::a2dp::CodecId::OPUS:
+       return A2DP_VendorGetPacketTimestampOpus(p_codec_info, p_data, p_timestamp);
++    case bluetooth::a2dp::CodecId::LHDCV3:
++      return A2DP_VendorGetPacketTimestampLhdcV3(p_codec_info, p_data, p_timestamp);
++    case bluetooth::a2dp::CodecId::LHDCV5:
++      return A2DP_VendorGetPacketTimestampLhdcV5(p_codec_info, p_data, p_timestamp);
+ #endif
+     default:
+       break;
+@@ -1695,4 +1715,4 @@ uint16_t A2DP_VendorCodecGetCodecId(const uint8_t* p_codec_info) {
+   uint16_t codec_id = (p[0] & 0x00ff) | ((p[1] << 8) & 0xff00);
+ 
+   return codec_id;
+-}
++}
+\ No newline at end of file
+diff --git a/system/stack/a2dp/a2dp_vendor.cc b/system/stack/a2dp/a2dp_vendor.cc
+index d6f6d4c0e3..52a160b6a7 100644
+--- a/system/stack/a2dp/a2dp_vendor.cc
++++ b/system/stack/a2dp/a2dp_vendor.cc
+@@ -167,6 +167,16 @@ tA2DP_STATUS A2DP_IsVendorSinkCodecSupported(const uint8_t* p_codec_info) {
+     return A2DP_IsVendorSinkCodecSupportedOpus(p_codec_info);
+   }
+ 
++  // Check for Savitech LHDCV3 Sink
++  else if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV3_CODEC_ID) {
++    return A2DP_IsVendorSinkCodecSupportedLhdcV3(p_codec_info);
++  }
++
++  // Check for Savitech LHDCV5 Sink
++  else if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV5_CODEC_ID) {
++    return A2DP_IsVendorSinkCodecSupportedLhdcV5(p_codec_info);
++  }
++
+   return A2DP_NOT_SUPPORTED_CODEC_TYPE;
+ }
+ 
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
+index 583fe25ff4..59a3fdbfc9 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
+@@ -38,7 +38,7 @@
+ #include "stack/include/bt_hdr.h"
+ #include "osi/include/osi.h"
+ #include <bluetooth/log.h>
+-#include "os/log.h"
++
+ using namespace bluetooth;
+ 
+ typedef struct {
+@@ -309,7 +309,7 @@ static tA2DP_STATUS A2DP_BuildInfoLhdcV3(uint8_t media_type,
+ 
+   const uint8_t* tmpInfo = p_result;
+   if (p_ie == NULL || p_result == NULL) {
+-      return A2DP_INVALID_PARAMS;
++      return A2DP_INVALID_CODEC_PARAMETER;
+   }
+ 
+   *p_result++ = A2DP_LHDCV3_CODEC_LEN;    //0
+@@ -409,19 +409,19 @@ static tA2DP_STATUS A2DP_ParseInfoLhdcV3(tA2DP_LHDC_CIE* p_ie,
+   const uint8_t* tmpInfo = p_codec_info;
+ 
+   //log::info( " : p_ie = {}, p_codec_info = {}", p_ie, p_codec_info);
+-  if (p_ie == NULL || p_codec_info == NULL) return A2DP_INVALID_PARAMS;
++  if (p_ie == NULL || p_codec_info == NULL) return A2DP_INVALID_CODEC_PARAMETER;
+ 
+   // Check the codec capability length
+   losc = *p_codec_info++;
+ 
+-  if (losc != A2DP_LHDCV3_CODEC_LEN) return A2DP_WRONG_CODEC;
++  if (losc != A2DP_LHDCV3_CODEC_LEN) return AVDTP_UNSUPPORTED_CONFIGURATION;
+ 
+   media_type = (*p_codec_info++) >> 4;
+-  codec_type = *p_codec_info++;
++  codec_type = static_cast<tA2DP_CODEC_TYPE>(*p_codec_info++);
+   //log::info( " : media_type = {}, codec_type = {}", media_type, codec_type);
+   /* Check the Media Type and Media Codec Type */
+   if (media_type != AVDT_MEDIA_TYPE_AUDIO || codec_type != A2DP_MEDIA_CT_NON_A2DP) {
+-      return A2DP_WRONG_CODEC;
++      return AVDTP_UNSUPPORTED_CONFIGURATION;
+   }
+ 
+   // Check the Vendor ID and Codec ID */
+@@ -436,12 +436,12 @@ static tA2DP_STATUS A2DP_ParseInfoLhdcV3(tA2DP_LHDC_CIE* p_ie,
+   log::info( " :Vendor(0x{:02x}), Codec(0x{:02x})", p_ie->vendorId, p_ie->codecId);
+   if (p_ie->vendorId != A2DP_LHDC_VENDOR_ID ||
+     p_ie->codecId != A2DP_LHDCV3_CODEC_ID) {
+-    return A2DP_WRONG_CODEC;
++    return AVDTP_UNSUPPORTED_CONFIGURATION;
+   }
+ 
+   p_ie->sampleRate = *p_codec_info & A2DP_LHDC_SAMPLING_FREQ_MASK;
+   if ((*p_codec_info & A2DP_LHDC_BIT_FMT_MASK) == 0) {
+-    return A2DP_WRONG_CODEC;
++    return AVDTP_UNSUPPORTED_CONFIGURATION;
+   }
+ 
+   p_ie->bits_per_sample = BTAV_A2DP_CODEC_BITS_PER_SAMPLE_NONE;
+@@ -494,7 +494,7 @@ static tA2DP_STATUS A2DP_ParseInfoLhdcV3(tA2DP_LHDC_CIE* p_ie,
+   if (is_capability) return A2DP_SUCCESS;
+ 
+   if (A2DP_BitsSet(p_ie->sampleRate) != A2DP_SET_ONE_BIT)
+-    return A2DP_BAD_SAMP_FREQ;
++    return A2DP_INVALID_SAMPLING_FREQUENCY;
+ 
+   return A2DP_SUCCESS;
+ }
+@@ -560,10 +560,10 @@ static tA2DP_STATUS A2DP_CodecInfoMatchesCapabilityLhdcV3(
+              cfg_cie.bits_per_sample, p_cap->bits_per_sample);
+ 
+   /* sampling frequency */
+-  if ((cfg_cie.sampleRate & p_cap->sampleRate) == 0) return A2DP_NS_SAMP_FREQ;
++  if ((cfg_cie.sampleRate & p_cap->sampleRate) == 0) return A2DP_NOT_SUPPORTED_SAMPLING_FREQUENCY;
+ 
+   /* bit per sample */
+-  if ((cfg_cie.bits_per_sample & p_cap->bits_per_sample) == 0) return A2DP_NS_CH_MODE;
++  if ((cfg_cie.bits_per_sample & p_cap->bits_per_sample) == 0) return A2DP_INVALID_BIT_RATE;
+ 
+   return A2DP_SUCCESS;
+ }
+@@ -630,7 +630,7 @@ bool A2DP_VendorCodecEqualsLhdcV3(const uint8_t* p_codec_info_a,
+ }
+ 
+ // Savitech Patch - START  Offload
+-int A2DP_VendorGetBitRateLhdcV3(const uint8_t* p_codec_info) {
++int A2DP_VendorGetBitRateLhdcV3(UNUSED_ATTR const uint8_t* p_codec_info) {
+ 
+   A2dpCodecConfig* current_codec = bta_av_get_a2dp_current_codec();
+   btav_a2dp_codec_config_t codec_config_ = current_codec->getCodecConfig();
+@@ -1089,7 +1089,7 @@ UNUSED_ATTR static void build_codec_config(const tA2DP_LHDC_CIE& config_cie,
+ 
+ A2dpCodecConfigLhdcV3::A2dpCodecConfigLhdcV3(
+     btav_a2dp_codec_priority_t codec_priority)
+-    : A2dpCodecConfig(BTAV_A2DP_CODEC_INDEX_SOURCE_LHDCV3, A2DP_CODEC_ID_LHDCV3,
++    : A2dpCodecConfig(BTAV_A2DP_CODEC_INDEX_SOURCE_LHDCV3, bluetooth::a2dp::CodecId::LHDCV3,
+                       A2DP_VendorCodecIndexStrLhdcV3(),
+                       codec_priority) {
+   // Compute the local capability        
+@@ -1115,9 +1115,7 @@ A2dpCodecConfigLhdcV3::A2dpCodecConfigLhdcV3(
+ A2dpCodecConfigLhdcV3::~A2dpCodecConfigLhdcV3() {}
+ 
+ bool A2dpCodecConfigLhdcV3::init() {
+-  if (!isValid()) return false;
+-
+-  // Load the encoder
++    // Load the encoder
+   if (!A2DP_VendorLoadEncoderLhdcV3()) {
+     log::error( " : cannot load the encoder");
+     return false;
+@@ -1470,7 +1468,7 @@ static uint32_t A2DP_MaxBitRatetoQualityLevelLhdcV3(uint8_t maxTargetBitrate)
+ }
+ 
+ 
+-bool A2dpCodecConfigLhdcV3::setCodecConfig(const uint8_t* p_peer_codec_info,
++tA2DP_STATUS A2dpCodecConfigLhdcV3::setCodecConfig(const uint8_t* p_peer_codec_info,
+                                            bool is_capability,
+                                            uint8_t* p_result_codec_config) {
+   std::lock_guard<std::recursive_mutex> lock(codec_mutex_);
+@@ -2357,7 +2355,7 @@ bool A2dpCodecConfigLhdcV3::setCodecConfig(const uint8_t* p_peer_codec_info,
+              (unsigned long long)(codec_config_.codec_specific_3),
+              (unsigned long long)(codec_config_.codec_specific_4));
+ 
+-  return true;
++  return A2DP_SUCCESS;
+ 
+ fail:
+   // Restore the internal state
+@@ -2370,7 +2368,7 @@ fail:
+          sizeof(ota_codec_peer_capability_));
+   memcpy(ota_codec_peer_config_, saved_ota_codec_peer_config,
+          sizeof(ota_codec_peer_config_));
+-  return false;
++  return A2DP_FAIL;
+ }
+ 
+ 
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
+index 2b25f09eef..b1c1ebee37 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
+@@ -40,7 +40,7 @@
+ #include "stack/include/bt_hdr.h"
+ #include "osi/include/osi.h"
+ #include <bluetooth/log.h>
+-#include "os/log.h"
++
+ using namespace bluetooth;
+ 
+ 
+@@ -274,7 +274,7 @@ static tA2DP_STATUS A2DP_BuildInfoLhdcV3Sink(uint8_t media_type,
+ 
+   const uint8_t* tmpInfo = p_result;
+   if (p_ie == NULL || p_result == NULL) {
+-    return A2DP_INVALID_PARAMS;
++    return A2DP_INVALID_CODEC_PARAMETER;
+   }
+ 
+   *p_result++ = A2DP_LHDCV3_CODEC_LEN;    //0
+@@ -382,20 +382,20 @@ static tA2DP_STATUS A2DP_ParseInfoLhdcV3Sink(tA2DP_LHDCV3_SINK_CIE* p_ie,
+   const uint8_t* p_codec_Info_save = p_codec_info;
+ 
+   //log::info(": p_ie = {}, p_codec_info = {}", p_ie, p_codec_info);
+-  if (p_ie == NULL || p_codec_info == NULL) return A2DP_INVALID_PARAMS;
++  if (p_ie == NULL || p_codec_info == NULL) return A2DP_INVALID_CODEC_PARAMETER;
+ 
+   // Check the codec capability length
+   losc = *p_codec_info++;
+ 
+-  if (losc != A2DP_LHDCV3_CODEC_LEN) return A2DP_WRONG_CODEC;
++  if (losc != A2DP_LHDCV3_CODEC_LEN) return AVDTP_UNSUPPORTED_CONFIGURATION;
+ 
+   media_type = (*p_codec_info++) >> 4;
+-  codec_type = *p_codec_info++;
++  codec_type = static_cast<tA2DP_CODEC_TYPE>(*p_codec_info++);
+     //log::info(": media_type = {}, codec_type = {}", media_type, codec_type);
+   /* Check the Media Type and Media Codec Type */
+   if (media_type != AVDT_MEDIA_TYPE_AUDIO ||
+       codec_type != A2DP_MEDIA_CT_NON_A2DP) {
+-    return A2DP_WRONG_CODEC;
++    return AVDTP_UNSUPPORTED_CONFIGURATION;
+   }
+ 
+   // Check the Vendor ID and Codec ID */
+@@ -410,12 +410,12 @@ static tA2DP_STATUS A2DP_ParseInfoLhdcV3Sink(tA2DP_LHDCV3_SINK_CIE* p_ie,
+   log::info(":Vendor(0x{:02x}), Codec(0x{:02x})", p_ie->vendorId, p_ie->codecId);
+   if (p_ie->vendorId != A2DP_LHDC_VENDOR_ID ||
+       p_ie->codecId != A2DP_LHDCV3_CODEC_ID) {
+-    return A2DP_WRONG_CODEC;
++    return AVDTP_UNSUPPORTED_CONFIGURATION;
+   }
+ 
+   p_ie->sampleRate = *p_codec_info & A2DP_LHDC_SAMPLING_FREQ_MASK;
+   if ((*p_codec_info & A2DP_LHDC_BIT_FMT_MASK) == 0) {
+-    return A2DP_WRONG_CODEC;
++    return AVDTP_UNSUPPORTED_CONFIGURATION;
+   }
+ 
+   p_ie->bits_per_sample = BTAV_A2DP_CODEC_BITS_PER_SAMPLE_NONE;
+@@ -471,7 +471,7 @@ static tA2DP_STATUS A2DP_ParseInfoLhdcV3Sink(tA2DP_LHDCV3_SINK_CIE* p_ie,
+   if (is_capability) return A2DP_SUCCESS;
+ 
+   if (A2DP_BitsSet(p_ie->sampleRate) != A2DP_SET_ONE_BIT)
+-    return A2DP_BAD_SAMP_FREQ;
++    return A2DP_INVALID_SAMPLING_FREQUENCY;
+ 
+   save_codec_info (p_codec_Info_save);
+ 
+@@ -836,9 +836,9 @@ bool A2DP_IsVendorPeerSourceCodecValidLhdcV3(const uint8_t* p_codec_info) {
+ }
+ 
+ 
+-bool A2DP_IsVendorSinkCodecSupportedLhdcV3(const uint8_t* p_codec_info) {
+-  return (A2DP_CodecInfoMatchesCapabilityLhdcV3Sink(&a2dp_lhdcv3_sink_caps, p_codec_info,
+-                                             false) == A2DP_SUCCESS);
++tA2DP_STATUS A2DP_IsVendorSinkCodecSupportedLhdcV3(const uint8_t* p_codec_info) {
++  return A2DP_CodecInfoMatchesCapabilityLhdcV3Sink(&a2dp_lhdcv3_sink_caps, p_codec_info,
++                                             false);
+ }
+ 
+ bool A2DP_IsPeerSourceCodecSupportedLhdcV3(const uint8_t* p_codec_info) {
+@@ -882,10 +882,10 @@ static tA2DP_STATUS A2DP_CodecInfoMatchesCapabilityLhdcV3Sink(
+             cfg_cie.bits_per_sample, p_cap->bits_per_sample);
+ 
+   /* sampling frequency */
+-  if ((cfg_cie.sampleRate & p_cap->sampleRate) == 0) return A2DP_NS_SAMP_FREQ;
++  if ((cfg_cie.sampleRate & p_cap->sampleRate) == 0) return A2DP_NOT_SUPPORTED_SAMPLING_FREQUENCY;
+ 
+   /* bit per sample */
+-  if ((cfg_cie.bits_per_sample & p_cap->bits_per_sample) == 0) return A2DP_NS_CH_MODE;
++  if ((cfg_cie.bits_per_sample & p_cap->bits_per_sample) == 0) return A2DP_INVALID_BIT_RATE;
+ 
+   return A2DP_SUCCESS;
+ }
+@@ -1155,9 +1155,7 @@ A2dpCodecConfigLhdcV3Sink::A2dpCodecConfigLhdcV3Sink(
+ A2dpCodecConfigLhdcV3Sink::~A2dpCodecConfigLhdcV3Sink() {}
+ 
+ bool A2dpCodecConfigLhdcV3Sink::init() {
+-  if (!isValid()) return false;
+-
+-  // Load the decoder
++    // Load the decoder
+   if (!A2DP_VendorLoadDecoderLhdcV3()) {
+     log::error(": cannot load the decoder");
+     return false;
+@@ -1195,7 +1193,7 @@ int A2dpCodecConfigLhdcV3Sink::getEffectiveMtu() const {
+ }
+ #endif
+ 
+-bool A2dpCodecConfigLhdcV3Base::setCodecConfig(const uint8_t* p_peer_codec_info, bool is_capability,
++tA2DP_STATUS A2dpCodecConfigLhdcV3Base::setCodecConfig(const uint8_t* p_peer_codec_info, bool is_capability,
+                       uint8_t* p_result_codec_config) {
+   std::lock_guard<std::recursive_mutex> lock(codec_mutex_);
+   is_source_ = false;
+@@ -1961,7 +1959,7 @@ bool A2dpCodecConfigLhdcV3Base::setCodecConfig(const uint8_t* p_peer_codec_info,
+   status = A2DP_BuildInfoLhdcV3Sink(AVDT_MEDIA_TYPE_AUDIO, &result_config_cie,
+                               ota_codec_config_);
+   CHECK(status == A2DP_SUCCESS);
+-  return true;
++  return A2DP_SUCCESS;
+ 
+ fail:
+   // Restore the internal state
+@@ -1974,7 +1972,7 @@ fail:
+          sizeof(ota_codec_peer_capability_));
+   memcpy(ota_codec_peer_config_, saved_ota_codec_peer_config,
+          sizeof(ota_codec_peer_config_));
+-  return false;
++  return A2DP_FAIL;
+ }
+ 
+ bool A2dpCodecConfigLhdcV3Base::setPeerCodecCapabilities(
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
+index da4cffae06..482934b1fc 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
+@@ -30,7 +30,7 @@
+ #include "stack/include/bt_hdr.h"
+ #include "osi/include/osi.h"
+ #include <bluetooth/log.h>
+-#include "os/log.h"
++
+ using namespace bluetooth;
+ 
+ 
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
+index ff3b0bd07e..19d7ebf3a1 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
+@@ -37,7 +37,7 @@
+ #include "stack/include/bt_hdr.h"
+ #include "osi/include/osi.h"
+ #include <bluetooth/log.h>
+-#include "os/log.h"
++
+ using namespace bluetooth;
+ 
+ //
+@@ -132,7 +132,7 @@ static tLHDC_SET_MBR_FUNC lhdc_set_mbr_func;
+ #endif
+ 
+ 
+-namespace fmt {
++namespace std {
+ template <>
+ struct formatter<LHDCBT_SMPL_FMT_T> : enum_formatter<LHDCBT_SMPL_FMT_T> {};
+ }  // namespace fmt
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5.cc
+index ecc115ca7a..4b9b233e83 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv5.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv5.cc
+@@ -36,7 +36,7 @@
+ #include "btif/include/btif_av_co.h"
+ #include "internal_include/bt_trace.h"
+ 
+-#include "os/log.h"
++
+ #include "osi/include/osi.h"
+ #include "stack/include/bt_hdr.h"
+ 
+@@ -517,7 +517,7 @@ static tA2DP_STATUS A2DP_BuildInfoLhdcV5(uint8_t media_type,
+ 
+   if (p_ie == nullptr || p_result == nullptr) {
+     log::error( ": nullptr input");
+-    return A2DP_INVALID_PARAMS;
++    return A2DP_INVALID_CODEC_PARAMETER;
+   }
+ 
+   *p_result++ = A2DP_LHDCV5_CODEC_LEN;  //H0
+@@ -537,8 +537,8 @@ static tA2DP_STATUS A2DP_BuildInfoLhdcV5(uint8_t media_type,
+   if ((p_ie->sampleRate & A2DP_LHDCV5_SAMPLING_FREQ_MASK) != A2DP_LHDCV5_SAMPLING_FREQ_NS) {
+     para |= (p_ie->sampleRate & A2DP_LHDCV5_SAMPLING_FREQ_MASK);
+   } else {
+-    log::error( ": invalid sample rate (0x{:02x})",  p_ie->sampleRate);
+-    return A2DP_INVALID_PARAMS;
++    log::error( ": invalid sample rate (0x{:02X})",  p_ie->sampleRate);
++    return A2DP_INVALID_CODEC_PARAMETER;
+   }
+   // update P6
+   *p_result++ = para; para = 0;
+@@ -547,8 +547,8 @@ static tA2DP_STATUS A2DP_BuildInfoLhdcV5(uint8_t media_type,
+   if ((p_ie->bitsPerSample & A2DP_LHDCV5_BIT_FMT_MASK) != A2DP_LHDCV5_BIT_FMT_NS) {
+     para |= (p_ie->bitsPerSample & A2DP_LHDCV5_BIT_FMT_MASK);
+   } else {
+-    log::error( ": invalid bits per sample (0x{:02x})",  p_ie->bitsPerSample);
+-    return A2DP_INVALID_PARAMS;
++    log::error( ": invalid bits per sample (0x{:02X})",  p_ie->bitsPerSample);
++    return A2DP_INVALID_CODEC_PARAMETER;
+   }
+   // P7[5:4] Max Target Bit Rate
+   para |= (p_ie->maxTargetBitrate & A2DP_LHDCV5_MAX_BIT_RATE_MASK);
+@@ -561,15 +561,15 @@ static tA2DP_STATUS A2DP_BuildInfoLhdcV5(uint8_t media_type,
+   if ((p_ie->version & A2DP_LHDCV5_VERSION_MASK) != A2DP_LHDCV5_VER_NS) {
+     para = para | (p_ie->version & A2DP_LHDCV5_VERSION_MASK);
+   } else {
+-    log::error( ": invalid codec subversion (0x{:02x})",  p_ie->version);
+-    return A2DP_INVALID_PARAMS;
++    log::error( ": invalid codec subversion (0x{:02X})",  p_ie->version);
++    return A2DP_INVALID_CODEC_PARAMETER;
+   }
+   // P8[5:4] Frame Length Type
+   if ((p_ie->frameLenType & A2DP_LHDCV5_FRAME_LEN_MASK) != A2DP_LHDCV5_FRAME_LEN_NS) {
+     para = para | (p_ie->frameLenType & A2DP_LHDCV5_FRAME_LEN_MASK);
+   } else {
+-    log::error( ": invalid frame length type (0x{:02x})",  p_ie->frameLenType);
+-    return A2DP_INVALID_PARAMS;
++    log::error( ": invalid frame_length type (0x{:02X})",  p_ie->frameLenType);
++    return A2DP_INVALID_CODEC_PARAMETER;
+   }
+   // update P8
+   *p_result++ = para; para = 0;
+@@ -640,24 +640,24 @@ static tA2DP_STATUS A2DP_ParseInfoLhdcV5(tA2DP_LHDCV5_CIE* p_ie,
+ 
+   if (p_ie == nullptr || p_codec_info == nullptr) {
+     log::error( ": nullptr input");
+-    return A2DP_INVALID_PARAMS;
++    return A2DP_INVALID_CODEC_PARAMETER;
+   }
+ 
+   // Codec capability length
+   losc = *p_codec_info++;
+   if (losc != A2DP_LHDCV5_CODEC_LEN) {
+     log::error( ": wrong length {}",  losc);
+-    return A2DP_WRONG_CODEC;
++    return AVDTP_UNSUPPORTED_CONFIGURATION;
+   }
+ 
+   media_type = (*p_codec_info++) >> 4;
+-  codec_type = *p_codec_info++;
++  codec_type = static_cast<tA2DP_CODEC_TYPE>(*p_codec_info++);
+ 
+   // Media Type and Media Codec Type
+   if (media_type != AVDT_MEDIA_TYPE_AUDIO ||
+       codec_type != A2DP_MEDIA_CT_NON_A2DP) {
+-    log::error( ": invalid media type 0x{:02x} codec_type 0x{:02x}",  media_type, codec_type);
+-    return A2DP_WRONG_CODEC;
++    log::error( ": invalid media type 0x{:02X} codec_type 0x{:02X}",  media_type, codec_type);
++    return AVDTP_UNSUPPORTED_CONFIGURATION;
+   }
+ 
+   // Vendor ID(P0-P3) and Codec ID(P4-P5)
+@@ -672,22 +672,22 @@ static tA2DP_STATUS A2DP_ParseInfoLhdcV5(tA2DP_LHDCV5_CIE* p_ie,
+       p_ie->codecId != A2DP_LHDCV5_CODEC_ID) {
+     log::error( ": invalid vendorId 0x{:02x} codecId 0x{:02x}",
+         p_ie->vendorId, p_ie->codecId);
+-    return A2DP_WRONG_CODEC;
++    return AVDTP_UNSUPPORTED_CONFIGURATION;
+   }
+ 
+   // P6[5:0] Sampling Frequency
+   p_ie->sampleRate = (*p_codec_info & A2DP_LHDCV5_SAMPLING_FREQ_MASK);
+   if (p_ie->sampleRate == A2DP_LHDCV5_SAMPLING_FREQ_NS) {
+-    log::error( ": invalid sample rate 0x{:02x}",  p_ie->sampleRate);
+-    return A2DP_WRONG_CODEC;
++    log::error( ": invalid sample rate 0x{:02X}",  p_ie->sampleRate);
++    return AVDTP_UNSUPPORTED_CONFIGURATION;
+   }
+   p_codec_info += 1;
+ 
+   // P7[2:0] Bits Per Sample
+   p_ie->bitsPerSample = (*p_codec_info & A2DP_LHDCV5_BIT_FMT_MASK);
+   if (p_ie->bitsPerSample == A2DP_LHDCV5_BIT_FMT_NS) {
+-    log::error( ": invalid bit per sample 0x{:02x}",  p_ie->bitsPerSample);
+-    return A2DP_WRONG_CODEC;
++    log::error( ": invalid bit per sample 0x{:02X}",  p_ie->bitsPerSample);
++    return AVDTP_UNSUPPORTED_CONFIGURATION;
+   }
+   // P7[5:4] Max Target Bit Rate
+   p_ie->maxTargetBitrate = (*p_codec_info & A2DP_LHDCV5_MAX_BIT_RATE_MASK);
+@@ -701,19 +701,19 @@ static tA2DP_STATUS A2DP_ParseInfoLhdcV5(tA2DP_LHDCV5_CIE* p_ie,
+   // P8[3:0] Codec SubVersion
+   p_ie->version = (*p_codec_info & A2DP_LHDCV5_VERSION_MASK);
+   if (p_ie->version == A2DP_LHDCV5_VER_NS) {
+-    log::error( ": invalid version 0x{:02x}",  p_ie->version);
+-    return A2DP_WRONG_CODEC;
++    log::error( ": invalid version 0x{:02X}",  p_ie->version);
++    return AVDTP_UNSUPPORTED_CONFIGURATION;
+   } else {
+     if (!is_codec_version_supported(p_ie->version, is_source)) {
+-      log::error( ": unsupported version 0x{:02x}",  p_ie->version);
+-      return A2DP_WRONG_CODEC;
++      log::error( ": unsupported version 0x{:02X}",  p_ie->version);
++      return AVDTP_UNSUPPORTED_CONFIGURATION;
+     }
+   }
+   // P8[5:4] Frame Length Type
+   p_ie->frameLenType = (*p_codec_info & A2DP_LHDCV5_FRAME_LEN_MASK);
+   if (p_ie->frameLenType == A2DP_LHDCV5_FRAME_LEN_NS) {
+-    log::error( ": invalid frame length mode 0x{:02x}",  p_ie->frameLenType);
+-    return A2DP_WRONG_CODEC;
++    log::error( ": invalid frame_length mode 0x{:02X}",  p_ie->frameLenType);
++    return AVDTP_UNSUPPORTED_CONFIGURATION;
+   }
+   p_codec_info += 1;
+ 
+@@ -807,9 +807,9 @@ bool A2DP_IsVendorPeerSourceCodecValidLhdcV5(const uint8_t* p_codec_info) {
+ }
+ 
+ // NOTE: Should be done only for local Sink codec
+-bool A2DP_IsVendorSinkCodecSupportedLhdcV5(const uint8_t* p_codec_info) {
+-  return (A2DP_CodecInfoMatchesCapabilityLhdcV5(&a2dp_lhdcv5_sink_caps, p_codec_info,
+-      false) == A2DP_SUCCESS);
++tA2DP_STATUS A2DP_IsVendorSinkCodecSupportedLhdcV5(const uint8_t* p_codec_info) {
++  return A2DP_CodecInfoMatchesCapabilityLhdcV5(&a2dp_lhdcv5_sink_caps, p_codec_info,
++      false);
+ }
+ // NOTE: Should be done only for local Sink codec
+ bool A2DP_IsPeerSourceCodecSupportedLhdcV5(const uint8_t* p_codec_info) {
+@@ -832,7 +832,7 @@ static tA2DP_STATUS A2DP_CodecInfoMatchesCapabilityLhdcV5(
+ 
+   if (p_cap == nullptr || p_codec_info == nullptr) {
+     log::error( ": nullptr input");
+-    return A2DP_INVALID_PARAMS;
++    return A2DP_INVALID_CODEC_PARAMETER;
+   }
+ 
+   // parse configuration
+@@ -850,10 +850,10 @@ static tA2DP_STATUS A2DP_CodecInfoMatchesCapabilityLhdcV5(
+       cfg_cie.bitsPerSample, p_cap->bitsPerSample);
+ 
+   // sampling frequency
+-  if ((cfg_cie.sampleRate & p_cap->sampleRate) == 0) return A2DP_NS_SAMP_FREQ;
++  if ((cfg_cie.sampleRate & p_cap->sampleRate) == 0) return A2DP_NOT_SUPPORTED_SAMPLING_FREQUENCY;
+ 
+   // bits per sample
+-  if ((cfg_cie.bitsPerSample & p_cap->bitsPerSample) == 0) return A2DP_NS_BIT_RATE;
++  if ((cfg_cie.bitsPerSample & p_cap->bitsPerSample) == 0) return A2DP_INVALID_BIT_RATE;
+ 
+   return A2DP_SUCCESS;
+ }
+@@ -938,7 +938,7 @@ bool A2DP_VendorCodecEqualsLhdcV5(const uint8_t* p_codec_info_a,
+ #endif
+ }
+ 
+-int A2DP_VendorGetBitRateLhdcV5(const uint8_t* p_codec_info) {
++int A2DP_VendorGetBitRateLhdcV5(UNUSED_ATTR const uint8_t* p_codec_info) {
+ 
+   A2dpCodecConfig* current_codec = bta_av_get_a2dp_current_codec();
+   btav_a2dp_codec_config_t codec_config_ = current_codec->getCodecConfig();
+@@ -1470,9 +1470,7 @@ A2dpCodecConfigLhdcV5Source::A2dpCodecConfigLhdcV5Source(
+ A2dpCodecConfigLhdcV5Source::~A2dpCodecConfigLhdcV5Source() {}
+ 
+ bool A2dpCodecConfigLhdcV5Source::init() {
+-  if (!isValid()) return false;
+-
+-  // Load the encoder
++    // Load the encoder
+   if (!A2DP_VendorLoadEncoderLhdcV5()) {
+     log::error( ": cannot load the encoder");
+     return false;
+@@ -1800,7 +1798,7 @@ static std::string lhdcV5_QualityModeBitRate_toString(uint8_t value) {
+ }
+ 
+ 
+-bool A2dpCodecConfigLhdcV5Base::setCodecConfig(const uint8_t* p_peer_codec_info,
++tA2DP_STATUS A2dpCodecConfigLhdcV5Base::setCodecConfig(const uint8_t* p_peer_codec_info,
+     bool is_capability,
+     uint8_t* p_result_codec_config) {
+   std::lock_guard<std::recursive_mutex> lock(codec_mutex_);
+@@ -2711,7 +2709,8 @@ bool A2dpCodecConfigLhdcV5Base::setCodecConfig(const uint8_t* p_peer_codec_info,
+   status = A2DP_BuildInfoLhdcV5(AVDT_MEDIA_TYPE_AUDIO, &result_config_cie,
+       ota_codec_config_);
+   CHECK(status == A2DP_SUCCESS);
+-  return true;
++
++  return A2DP_SUCCESS;
+ 
+   fail:
+   // Restore the internal state
+@@ -2724,7 +2723,8 @@ bool A2dpCodecConfigLhdcV5Base::setCodecConfig(const uint8_t* p_peer_codec_info,
+       sizeof(ota_codec_peer_capability_));
+   memcpy(ota_codec_peer_config_, saved_ota_codec_peer_config,
+       sizeof(ota_codec_peer_config_));
+-  return false;
++
++  return A2DP_FAIL;
+ }
+ 
+ bool A2dpCodecConfigLhdcV5Base::setPeerCodecCapabilities(
+@@ -2815,9 +2815,7 @@ A2dpCodecConfigLhdcV5Sink::A2dpCodecConfigLhdcV5Sink(
+ A2dpCodecConfigLhdcV5Sink::~A2dpCodecConfigLhdcV5Sink() {}
+ 
+ bool A2dpCodecConfigLhdcV5Sink::init() {
+-  if (!isValid()) return false;
+-
+-  // Load the decoder
++    // Load the decoder
+   if (!A2DP_VendorLoadDecoderLhdcV5()) {
+     log::error( ": cannot load the decoder");
+     return false;
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc
+index 24a41a58d7..92bd1ee4ee 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc
+@@ -32,7 +32,7 @@
+ #include "stack/include/bt_hdr.h"
+ #include "osi/include/osi.h"
+ #include <bluetooth/log.h>
+-#include "os/log.h"
++
+ using namespace bluetooth;
+ 
+ 
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc
+index 9a3392e504..a4a59c2c80 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc
+@@ -38,7 +38,7 @@
+ #include "stack/include/bt_hdr.h"
+ #include "osi/include/osi.h"
+ #include <bluetooth/log.h>
+-#include "os/log.h"
++
+ using namespace bluetooth;
+ 
+ 
+diff --git a/system/stack/include/a2dp_vendor_lhdcv3.h b/system/stack/include/a2dp_vendor_lhdcv3.h
+index e2bc464c0b..89ed44670d 100755
+--- a/system/stack/include/a2dp_vendor_lhdcv3.h
++++ b/system/stack/include/a2dp_vendor_lhdcv3.h
+@@ -165,7 +165,7 @@ class A2dpCodecConfigLhdcV3 : public A2dpCodecConfig {
+   bool init() override;
+   //uint64_t encoderIntervalMs() const override;
+   //int getEffectiveMtu() const override;
+-  bool setCodecConfig(const uint8_t* p_peer_codec_info, bool is_capability,
++  tA2DP_STATUS setCodecConfig(const uint8_t* p_peer_codec_info, bool is_capability,
+                       uint8_t* p_result_codec_config) override;
+   bool setPeerCodecCapabilities(
+       const uint8_t* p_peer_codec_capabilities) override;
+diff --git a/system/stack/include/a2dp_vendor_lhdcv3_dec.h b/system/stack/include/a2dp_vendor_lhdcv3_dec.h
+index 3791091b32..d2474d35a1 100755
+--- a/system/stack/include/a2dp_vendor_lhdcv3_dec.h
++++ b/system/stack/include/a2dp_vendor_lhdcv3_dec.h
+@@ -34,9 +34,9 @@ class A2dpCodecConfigLhdcV3Base : public A2dpCodecConfig {
+                          const std::string& name,
+                          btav_a2dp_codec_priority_t codec_priority,
+                          bool is_source)
+-      : A2dpCodecConfig(codec_index, A2DP_CODEC_ID_LHDCV3, name, codec_priority),
++      : A2dpCodecConfig(codec_index, bluetooth::a2dp::CodecId::LHDCV3, name, codec_priority),
+         is_source_(is_source) {}
+-  bool setCodecConfig(const uint8_t* p_peer_codec_info, bool is_capability,
++  tA2DP_STATUS setCodecConfig(const uint8_t* p_peer_codec_info, bool is_capability,
+                       uint8_t* p_result_codec_config) override;
+   bool setPeerCodecCapabilities(
+       const uint8_t* p_peer_codec_capabilities) override;
+@@ -86,7 +86,7 @@ bool A2DP_IsVendorPeerSourceCodecValidLhdcV3(const uint8_t* p_codec_info);
+ // Checks whether A2DP SBC Sink codec is supported.
+ // |p_codec_info| contains information about the codec capabilities.
+ // Returns true if the A2DP SBC Sink codec is supported, otherwise false.
+-bool A2DP_IsVendorSinkCodecSupportedLhdcV3(const uint8_t* p_codec_info);
++tA2DP_STATUS A2DP_IsVendorSinkCodecSupportedLhdcV3(const uint8_t* p_codec_info);
+ 
+ // Checks whether an A2DP SBC Source codec for a peer Source device is
+ // supported.
+diff --git a/system/stack/include/a2dp_vendor_lhdcv5.h b/system/stack/include/a2dp_vendor_lhdcv5.h
+index 2214324099..8a5c2a0458 100755
+--- a/system/stack/include/a2dp_vendor_lhdcv5.h
++++ b/system/stack/include/a2dp_vendor_lhdcv5.h
+@@ -38,9 +38,9 @@ class A2dpCodecConfigLhdcV5Base : public A2dpCodecConfig {
+                          const std::string& name,
+                          btav_a2dp_codec_priority_t codec_priority,
+                          bool is_source)
+-      : A2dpCodecConfig(codec_index,  A2DP_CODEC_ID_LHDCV5, name, codec_priority),
++      : A2dpCodecConfig(codec_index,  bluetooth::a2dp::CodecId::LHDCV5, name, codec_priority),
+         is_source_(is_source) {}
+-  bool setCodecConfig(const uint8_t* p_peer_codec_info, bool is_capability,
++  tA2DP_STATUS setCodecConfig(const uint8_t* p_peer_codec_info, bool is_capability,
+                       uint8_t* p_result_codec_config) override;
+   bool setPeerCodecCapabilities(
+       const uint8_t* p_peer_codec_capabilities) override;
+@@ -242,7 +242,7 @@ bool A2DP_IsVendorPeerSourceCodecValidLhdcV5(const uint8_t* p_codec_info);
+ // Checks whether A2DP SBC Sink codec is supported.
+ // |p_codec_info| contains information about the codec capabilities.
+ // Returns true if the A2DP SBC Sink codec is supported, otherwise false.
+-bool A2DP_IsVendorSinkCodecSupportedLhdcV5(const uint8_t* p_codec_info);
++tA2DP_STATUS A2DP_IsVendorSinkCodecSupportedLhdcV5(const uint8_t* p_codec_info);
+ 
+ // Checks whether an A2DP SBC Source codec for a peer Source device is
+ // supported.
+-- 
+2.55.0
+
+
+From 762610ef7d8d5d38928a165d02b4e3db22f5823c Mon Sep 17 00:00:00 2001
+From: Alcatraz323 <alcatraz32323@gmail.com>
+Date: Thu, 8 Jan 2026 15:16:42 +0800
+Subject: [PATCH 2/8] bluetooth: Enable lossless raw mode support
+
+* V5.2.5 lib needed
+---
+ system/stack/include/a2dp_vendor_lhdcv5.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/system/stack/include/a2dp_vendor_lhdcv5.h b/system/stack/include/a2dp_vendor_lhdcv5.h
+index 8a5c2a0458..13f0fd2cb4 100755
+--- a/system/stack/include/a2dp_vendor_lhdcv5.h
++++ b/system/stack/include/a2dp_vendor_lhdcv5.h
+@@ -27,7 +27,7 @@
+ #include "avdt_api.h"
+ 
+ /* lossless raw mode support */
+-//#define LHDC_LOSSLESS_RAW_SUPPORT
++#define LHDC_LOSSLESS_RAW_SUPPORT
+ 
+ #define IS_SRC  (true)
+ #define IS_SNK  (false)
+-- 
+2.55.0
+
+
+From 5ac6b726b43a7ed3cbf057c7a084fb98e331b97d Mon Sep 17 00:00:00 2001
+From: justsarx <sinhasarthak56@gmail.com>
+Date: Sat, 8 Aug 2026 23:08:59 +0530
+Subject: [PATCH 3/8] com.android.bt: Include base liblhdc and liblhdcv5 in
+ native_shared_libs
+
+---
+ apex/Android.bp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/apex/Android.bp b/apex/Android.bp
+index 6bbf87c5e3..f36d5b94ab 100644
+--- a/apex/Android.bp
++++ b/apex/Android.bp
+@@ -33,7 +33,9 @@ apex {
+ 
+     // savitech LHDC
+     native_shared_libs: [
++        "liblhdc",
+         "liblhdcBT_enc",
++        "liblhdcv5",
+         "liblhdcv5BT_enc",
+     ],
+ 
+-- 
+2.55.0
+
+
+From 6f3914e97b61f3f9a369031fd72331cf3d2b54e2 Mon Sep 17 00:00:00 2001
+From: justsarx <sinhasarthak56@gmail.com>
+Date: Sat, 8 Aug 2026 23:20:40 +0530
+Subject: [PATCH 4/8] bluetooth: Add APEX and system path fallbacks for LHDC
+ dlopen
+
+---
+ system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc | 8 +++++++-
+ system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc | 8 +++++++-
+ 2 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
+index 19d7ebf3a1..fdf62ab5fb 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
+@@ -253,7 +253,13 @@ bool A2DP_VendorLoadEncoderLhdcV3(void) {
+   // Open the encoder library
+   lhdc_encoder_lib_handle = dlopen(LHDC_ENCODER_LIB_NAME, RTLD_NOW);
+   if (lhdc_encoder_lib_handle == NULL) {
+-    log::error( ": cannot open LHDC encoder library : {}",
++    lhdc_encoder_lib_handle = dlopen("/apex/com.android.bt/lib64/liblhdcBT_enc.so", RTLD_NOW);
++  }
++  if (lhdc_encoder_lib_handle == NULL) {
++    lhdc_encoder_lib_handle = dlopen("/system/lib64/liblhdcBT_enc.so", RTLD_NOW);
++  }
++  if (lhdc_encoder_lib_handle == NULL) {
++    log::error( ": cannot open LHDC encoder library : {}, error: {}",
+               LHDC_ENCODER_LIB_NAME, dlerror());
+     return false;
+   }
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc
+index a4a59c2c80..afc167b992 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc
+@@ -245,7 +245,13 @@ bool A2DP_VendorLoadEncoderLhdcV5(void) {
+   // Open the encoder library
+   lhdc_encoder_lib_handle = dlopen(LHDC_ENCODER_LIB_NAME, RTLD_NOW);
+   if (lhdc_encoder_lib_handle == nullptr) {
+-    log::error( ": cannot open LHDC encoder library : {}",
++    lhdc_encoder_lib_handle = dlopen("/apex/com.android.bt/lib64/liblhdcv5BT_enc.so", RTLD_NOW);
++  }
++  if (lhdc_encoder_lib_handle == nullptr) {
++    lhdc_encoder_lib_handle = dlopen("/system/lib64/liblhdcv5BT_enc.so", RTLD_NOW);
++  }
++  if (lhdc_encoder_lib_handle == nullptr) {
++    log::error( ": cannot open LHDC encoder library : {}, error: {}",
+         LHDC_ENCODER_LIB_NAME, dlerror());
+     return false;
+   }
+-- 
+2.55.0
+
+
+From 036a1445e0248726525c7bfd1e99e6a8a6e2d589 Mon Sep 17 00:00:00 2001
+From: justsarx <sinhasarthak56@gmail.com>
+Date: Sat, 8 Aug 2026 23:28:56 +0530
+Subject: [PATCH 5/8] bluetooth: Add RTLD_GLOBAL preloading and fallbacks to
+ LHDC decoders
+
+---
+ .../stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc   | 18 +++++++++++++-----
+ .../stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc   | 15 +++++++++++++--
+ 2 files changed, 26 insertions(+), 7 deletions(-)
+
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
+index 482934b1fc..75d4c1d694 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
+@@ -274,13 +274,21 @@ bool A2DP_VendorLoadDecoderLhdcV3(void) {
+ 
+   memset(&a2dp_lhdcv3_decoder_cb, 0, sizeof(a2dp_lhdcv3_decoder_cb));
+ 
+-  // Open the encoder library
++  // Pre-load base engine library globally so wrapper symbols resolve
++  dlopen("liblhdc.so", RTLD_NOW | RTLD_GLOBAL);
++  dlopen("/apex/com.android.bt/lib64/liblhdc.so", RTLD_NOW | RTLD_GLOBAL);
++  dlopen("/system/lib64/liblhdc.so", RTLD_NOW | RTLD_GLOBAL);
++
++  // Open the decoder library
+   lhdc_decoder_lib_handle = dlopen(LHDC_DECODER_LIB_NAME, RTLD_NOW);
+   if (lhdc_decoder_lib_handle == NULL) {
+-  //  LOG_ERROR("%s: cannot open LHDC decoder library %s: %s", __func__,
+-             // LHDC_DECODER_LIB_NAME, dlerror());
+-    log::error("cannot open LHDC decoder library : {}",LHDC_DECODER_LIB_NAME,dlerror());
+-              
++    lhdc_decoder_lib_handle = dlopen("/apex/com.android.bt/lib64/liblhdcBT_dec.so", RTLD_NOW);
++  }
++  if (lhdc_decoder_lib_handle == NULL) {
++    lhdc_decoder_lib_handle = dlopen("/system/lib64/liblhdcBT_dec.so", RTLD_NOW);
++  }
++  if (lhdc_decoder_lib_handle == NULL) {
++    log::error("cannot open LHDC decoder library : {}, error: {}", LHDC_DECODER_LIB_NAME, dlerror());
+     return false;
+   }
+ 
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc
+index 92bd1ee4ee..4e410bbf37 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc
+@@ -270,10 +270,21 @@ bool A2DP_VendorLoadDecoderLhdcV5(void) {
+ 
+   pthread_mutex_init(&(a2dp_lhdcv5_decoder_cb.mutex), NULL);
+ 
+-  // Open the encoder library
++  // Pre-load base engine library globally so wrapper symbols resolve
++  dlopen("liblhdcv5.so", RTLD_NOW | RTLD_GLOBAL);
++  dlopen("/apex/com.android.bt/lib64/liblhdcv5.so", RTLD_NOW | RTLD_GLOBAL);
++  dlopen("/system/lib64/liblhdcv5.so", RTLD_NOW | RTLD_GLOBAL);
++
++  // Open the decoder library
+   lhdc_decoder_lib_handle = dlopen(LHDC_DECODER_LIB_NAME, RTLD_NOW);
+   if (lhdc_decoder_lib_handle == NULL) {
+-    log::error( ": cannot open LHDCV5 decoder library ", dlerror());
++    lhdc_decoder_lib_handle = dlopen("/apex/com.android.bt/lib64/liblhdcv5BT_dec.so", RTLD_NOW);
++  }
++  if (lhdc_decoder_lib_handle == NULL) {
++    lhdc_decoder_lib_handle = dlopen("/system/lib64/liblhdcv5BT_dec.so", RTLD_NOW);
++  }
++  if (lhdc_decoder_lib_handle == NULL) {
++    log::error( ": cannot open LHDCV5 decoder library : {}, error: {}", LHDC_DECODER_LIB_NAME, dlerror());
+     return false;
+   }
+ 
+-- 
+2.55.0
+
+
+From 066348bc6601419c084d61924d15f4cd507c5670 Mon Sep 17 00:00:00 2001
+From: justsarx <sinhasarthak56@gmail.com>
+Date: Sat, 8 Aug 2026 23:42:26 +0530
+Subject: [PATCH 6/8] com.android.bt: Include libcutils in native_shared_libs
+ for LHDC
+
+---
+ apex/Android.bp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/apex/Android.bp b/apex/Android.bp
+index f36d5b94ab..493f882457 100644
+--- a/apex/Android.bp
++++ b/apex/Android.bp
+@@ -33,10 +33,12 @@ apex {
+ 
+     // savitech LHDC
+     native_shared_libs: [
++        "libcutils",
+         "liblhdc",
+         "liblhdcBT_enc",
+         "liblhdcv5",
+         "liblhdcv5BT_enc",
++        "libstdc++",
+     ],
+ 
+     multilib: {
+-- 
+2.55.0
+
+
+From f97e809c640cf473439ff1cb97ff5c49bcae263d Mon Sep 17 00:00:00 2001
+From: justsarx <sinhasarthak56@gmail.com>
+Date: Sun, 9 Aug 2026 00:20:08 +0530
+Subject: [PATCH 7/8] bluetooth: Force 96kHz and 24-bit selectable capability
+ for LHDC V3/V4
+
+---
+ system/stack/a2dp/a2dp_vendor_lhdcv3.cc | 27 ++++++-------------------
+ 1 file changed, 6 insertions(+), 21 deletions(-)
+
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
+index 59a3fdbfc9..dcfc320b4e 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
+@@ -1611,22 +1611,11 @@ tA2DP_STATUS A2dpCodecConfigLhdcV3::setCodecConfig(const uint8_t* p_peer_codec_i
+   // Select the sample frequency if there is no user preference
+   do {
+       // Compute the selectable capability
+-      if (sampleRate & A2DP_LHDC_SAMPLING_FREQ_44100) {
+-        codec_selectable_capability_.sample_rate |=
+-            BTAV_A2DP_CODEC_SAMPLE_RATE_44100;
+-      }
+-      if (sampleRate & A2DP_LHDC_SAMPLING_FREQ_48000) {
+-        codec_selectable_capability_.sample_rate |=
+-            BTAV_A2DP_CODEC_SAMPLE_RATE_48000;
+-      }
+-      if (sampleRate & A2DP_LHDC_SAMPLING_FREQ_88200) {
+-        codec_selectable_capability_.sample_rate |=
+-            BTAV_A2DP_CODEC_SAMPLE_RATE_88200;
+-      }
+-      if (sampleRate & A2DP_LHDC_SAMPLING_FREQ_96000) {
+-        codec_selectable_capability_.sample_rate |=
+-            BTAV_A2DP_CODEC_SAMPLE_RATE_96000;
+-      }
++      codec_selectable_capability_.sample_rate |=
++          BTAV_A2DP_CODEC_SAMPLE_RATE_44100 |
++          BTAV_A2DP_CODEC_SAMPLE_RATE_48000 |
++          BTAV_A2DP_CODEC_SAMPLE_RATE_88200 |
++          BTAV_A2DP_CODEC_SAMPLE_RATE_96000;
+ 
+       //Above Parts: if codec_config is setup successfully(ie., sampleRate in codec_user_config_ is valid), ignore following parts.
+       if (codec_config_.sample_rate != BTAV_A2DP_CODEC_SAMPLE_RATE_NONE) {
+@@ -1711,11 +1700,7 @@ tA2DP_STATUS A2dpCodecConfigLhdcV3::setCodecConfig(const uint8_t* p_peer_codec_i
+   // Select the bits per sample if there is no user preference
+   do {
+       // Compute the selectable capability
+-      // Compute the selectable capability
+-      if (bits_per_sample & BTAV_A2DP_CODEC_BITS_PER_SAMPLE_16)
+-        codec_selectable_capability_.bits_per_sample |= BTAV_A2DP_CODEC_BITS_PER_SAMPLE_16;
+-      if (bits_per_sample & BTAV_A2DP_CODEC_BITS_PER_SAMPLE_24)
+-        codec_selectable_capability_.bits_per_sample |= BTAV_A2DP_CODEC_BITS_PER_SAMPLE_24;
++      codec_selectable_capability_.bits_per_sample |= BTAV_A2DP_CODEC_BITS_PER_SAMPLE_16 | BTAV_A2DP_CODEC_BITS_PER_SAMPLE_24;
+ 
+       if (codec_config_.bits_per_sample != BTAV_A2DP_CODEC_BITS_PER_SAMPLE_NONE){
+         log::info( " : setup bit_per_sample:0x{:02x} user_config", codec_config_.bits_per_sample);
+-- 
+2.55.0
+
+
+From a3451c4e8683cd38202c52c5c7696af40993a4ec Mon Sep 17 00:00:00 2001
+From: justsarx <sinhasarthak56@gmail.com>
+Date: Sun, 9 Aug 2026 00:47:19 +0530
+Subject: [PATCH 8/8] a2dp: Add RTLD_GLOBAL preloading for liblhdc.so and
+ liblhdcv5.so in encoders
+
+---
+ system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc | 5 +++++
+ system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc | 5 +++++
+ 2 files changed, 10 insertions(+)
+
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
+index fdf62ab5fb..83f0616ab6 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
+@@ -250,6 +250,11 @@ bool A2DP_VendorLoadEncoderLhdcV3(void) {
+   // Initialize the control block
+   memset(&a2dp_lhdc_encoder_cb, 0, sizeof(a2dp_lhdc_encoder_cb));
+ 
++  // Pre-load base engine library globally so wrapper symbols resolve
++  dlopen("liblhdc.so", RTLD_NOW | RTLD_GLOBAL);
++  dlopen("/apex/com.android.bt/lib64/liblhdc.so", RTLD_NOW | RTLD_GLOBAL);
++  dlopen("/system/lib64/liblhdc.so", RTLD_NOW | RTLD_GLOBAL);
++
+   // Open the encoder library
+   lhdc_encoder_lib_handle = dlopen(LHDC_ENCODER_LIB_NAME, RTLD_NOW);
+   if (lhdc_encoder_lib_handle == NULL) {
+diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc
+index afc167b992..62673c2ac0 100755
+--- a/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc
++++ b/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc
+@@ -242,6 +242,11 @@ bool A2DP_VendorLoadEncoderLhdcV5(void) {
+   // Initialize the control block
+   memset(&a2dp_lhdc_encoder_cb, 0, sizeof(a2dp_lhdc_encoder_cb));
+ 
++  // Pre-load base engine library globally so wrapper symbols resolve
++  dlopen("liblhdcv5.so", RTLD_NOW | RTLD_GLOBAL);
++  dlopen("/apex/com.android.bt/lib64/liblhdcv5.so", RTLD_NOW | RTLD_GLOBAL);
++  dlopen("/system/lib64/liblhdcv5.so", RTLD_NOW | RTLD_GLOBAL);
++
+   // Open the encoder library
+   lhdc_encoder_lib_handle = dlopen(LHDC_ENCODER_LIB_NAME, RTLD_NOW);
+   if (lhdc_encoder_lib_handle == nullptr) {
+-- 
+2.55.0
+

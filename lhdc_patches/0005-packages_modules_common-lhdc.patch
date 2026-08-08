@@ -1,0 +1,30 @@
+From 33175b9f45396025d4ec8244c548d9bb909be3c3 Mon Sep 17 00:00:00 2001
+From: justsarx <sinhasarthak56@gmail.com>
+Date: Sun, 9 Aug 2026 00:47:19 +0530
+Subject: [PATCH] common: Add LHDC prebuilt dependencies to allowed_deps.txt
+
+Change-Id: Id01a890242756449394e1bc776eee9286a6e4409
+---
+ build/allowed_deps.txt | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/build/allowed_deps.txt b/build/allowed_deps.txt
+index bc841d72..37c6f710 100644
+--- a/build/allowed_deps.txt
++++ b/build/allowed_deps.txt
+@@ -1596,6 +1596,12 @@ prebuilt_libc_headers(minSdkVersion:(no version))
+ prebuilt_libcap(minSdkVersion:(no version))
+ prebuilt_libclang_rt.builtins(minSdkVersion:(no version))
+ prebuilt_libclang_rt.ubsan_minimal(minSdkVersion:(no version))
++prebuilt_liblhdc(minSdkVersion:(no version))
++prebuilt_liblhdcBT_enc(minSdkVersion:(no version))
++prebuilt_liblhdcv5(minSdkVersion:(no version))
++prebuilt_liblhdcv5BT_enc(minSdkVersion:(no version))
++prebuilt_libstdc++(minSdkVersion:33)
++libstdc++(minSdkVersion:33)
+ prebuilt_libnativehelper_compat_libc++(minSdkVersion:(no version))
+ prebuilt_libnativehelper_header_only(minSdkVersion:(no version))
+ prebuilt_libperfetto_client_experimental(minSdkVersion:(no version))
+-- 
+2.55.0
+
