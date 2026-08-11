@@ -1,6 +1,8 @@
 # Audio
-aaudio.mmap_exclusive_policy=2
-aaudio.mmap_policy=2
+aaudio.mmap_exclusive_policy=1
+aaudio.mmap_policy=1
+audio.offload.video=false
+persist.vendor.audiohal.besloudness_state=1
 ro.config.vc_call_vol_steps=8
 ro.vendor.audio.moto_sst_supported=false
 ro.vendor.mtk_audio_tuning_tool_ver=V1
